@@ -1,0 +1,38 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import penguins from "../../assets/penguins.json";
+
+const species = [...new Set(penguins.map((penguin) => penguin.species))];
+---
+
+<Layout>
+    <div class="m-5">
+        <h1 class="text-3xl my-5">Rendu dynamique - Index des espèces</h1>
+        <a class="text-blue-900 my-5" href="/">Retour aux étapes</a>
+
+        <div class="mt-8">
+            <h2 class="text-xl mb-4">Espèces disponibles :</h2>
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {
+                    species.map((specie) => (
+                        <a
+                            href={`/rendu-dynamique/${encodeURIComponent(specie.toLowerCase())}`}
+                            class="block p-4 border border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-500 transition-colors"
+                        >
+                            <h3 class="text-lg font-semibold text-blue-900">
+                                {specie}
+                            </h3>
+                            <p class="text-gray-600 text-sm mt-1">
+                                {
+                                    penguins.filter((p) => p.species === specie)
+                                        .length
+                                }{" "}
+                                pingouins
+                            </p>
+                        </a>
+                    ))
+                }
+            </div>
+        </div>
+    </div>
+</Layout>
