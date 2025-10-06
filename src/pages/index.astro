@@ -1,21 +1,85 @@
 ---
-import PlotFigure from "../components/PlotFigure.astro";
 import Layout from "../layouts/Layout.astro";
 import * as Plot from "@observablehq/plot";
 import penguins from "../assets/penguins.json";
+
+const species = [...new Set(penguins.map((penguin) => penguin.species))];
 ---
 
 <Layout>
-  <h1 class="text-2xl">Test Astro et Plot (Observablehq)</h1>
-  <PlotFigure
-    options={{
-      marks: [
-        Plot.dot(penguins, {
-          x: "culmen_length_mm",
-          y: "culmen_depth_mm",
-          stroke: "species",
-        }),
-      ],
-    }}
-  />
+  <div class="m-5">
+    <h3 class="text-3xl my-5">Penguins avec filtre automatique</h3>
+
+    <div class="my-5">
+      <label for="species" class="mr-2">Choisissez une espèce :</label>
+      <select name="species" id="species" class="border p-1 rounded">
+        <option value="">Toutes les espèces</option>
+        {species.map((specie) => <option value={specie}>{specie}</option>)}
+      </select>
+    </div>
+
+    <div
+      id="myplot"
+      data-penguins={JSON.stringify(penguins)}
+      data-species={JSON.stringify(species)}
+    >
+    </div>
+
+    <script>
+      import * as Plot from "@observablehq/plot";
+
+      const div = document.querySelector("#myplot");
+      const selectSpecies = document.querySelector("#species");
+      const tabs = document.querySelectorAll(".tab");
+      const penguins = JSON.parse(div.dataset.penguins);
+      const species = JSON.parse(div.dataset.species);
+
+      function renderPlot() {
+        const selectedSpecies = selectSpecies.value;
+
+        const data = selectedSpecies
+          ? penguins.filter((p) => p.species === selectedSpecies)
+          : penguins;
+
+        div.innerHTML = "";
+
+        const plot = Plot.plot({
+          title: selectedSpecies
+            ? `Espèce : ${selectedSpecies}`
+            : "Toutes les espèces",
+          marks: [
+            Plot.dot(data, {
+              x: "culmen_length_mm",
+              y: "culmen_depth_mm",
+              stroke: "species",
+            }),
+          ],
+        });
+
+        div.append(plot);
+
+        updateTabs(selectedSpecies);
+      }
+
+      function updateTabs(selectedSpecies) {
+        tabs.forEach((tab) => {
+          tab.classList.remove("tab-active");
+          if (tab.dataset.species === selectedSpecies) {
+            tab.classList.add("tab-active");
+          }
+        });
+      }
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          selectSpecies.value = tab.dataset.species;
+          renderPlot();
+        });
+      });
+
+      selectSpecies.addEventListener("change", renderPlot);
+
+      renderPlot();
+    </script>
+  </div>
 </Layout>
